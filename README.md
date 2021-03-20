@@ -2,5 +2,5 @@
 dataset
 https://github.com/TuSimple/tusimple-benchmark
 
-resources links
+useful resources
 https://docs.google.com/document/d/14939MKtTabHOpCMYjqO3Are2ulUFup6Uw-HIcGHLuVw/edit?usp=sharing
