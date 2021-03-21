@@ -16,6 +16,7 @@ def read_velocity_image(folder, id, annotation=False):
         return None
     
     if folder == 'supp':
+        path_img = project_folder / velocity_folder / f'{folder}/supp_img/{id:04d}.jpg'
     else: # folder is train/test
         path_img = project_folder / velocity_folder / f'{folder}/clips/{id}/imgs/040.jpg'
     
