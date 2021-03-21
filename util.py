@@ -1,17 +1,18 @@
 import cv2
 import json
+import os.path
 from pathlib import Path
 
-project_folder = Path()
+project_folder = Path(__file__).parent.absolute()
 velocity_folder = Path('dataset/velocity')
 
 def read_velocity_image(folder, id, annotation=False):
     """
     Reads a certain image from the velocity dataset. Adds annotations if needed.
-	If folder is 'test' or 'train', read the last frame of the clip.
+    If folder is 'test' or 'train', read the last frame of the clip.
     """
-        
-	# invalid folder
+    
+    # invalid folder
     if folder not in ['supp', 'test', 'train']:
         return None
     
@@ -21,17 +22,17 @@ def read_velocity_image(folder, id, annotation=False):
         path_img = project_folder / velocity_folder / f'{folder}/clips/{id}/imgs/040.jpg'
     
     print(path_img)
-	# read the image
+    # read the image
     img = cv2.imread(str(path_img))
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
-	# add annotation
+    # add annotation
     if annotation:
         if folder == 'supp':
             path_annotation = project_folder / velocity_folder / f'{folder}/annotation.json'
-			# load the annotation file
+            # load the annotation file
             with open(path_annotation) as file:
-			    # parse json file and extract bboxs
+                # parse json file and extract bboxs
                 annotation = json.load(file)
                 bboxs = annotation[id - 1]['bbox']
                 # draw bounding boxes
