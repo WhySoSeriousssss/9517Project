@@ -1,8 +1,9 @@
 import cv2
 import json
+import os.path
 from pathlib import Path
 
-project_folder = Path()
+project_folder = Path(__file__).parent.absolute()
 velocity_folder = Path('dataset/velocity')
 
 def read_velocity_image(folder, id, annotation=False):
