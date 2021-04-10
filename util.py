@@ -44,25 +44,33 @@ def read_velocity_image(folder, id, annotation=False):
             bboxs = annotation[id - 1]['bbox']
             # draw bounding boxes
             for bbox in bboxs:
-                cv2.rectangle(img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), \
-                              color=(0, 255, 0), thickness=2)
+                cv2.rectangle(
+                    img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), 
+                    color=(0, 255, 0), thickness=2
+                )
         
         else: # folder is train/test
             # draw annoatations
             for a in annotation:
                 bbox = a['bbox']
                 # draw bounding boxes
-                cv2.rectangle(img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), \
-                              color=(0, 255, 0), thickness=2)
+                cv2.rectangle(
+                    img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), 
+                    color=(0, 255, 0), thickness=2
+                )
                 if folder == 'train':
                     vel, pos = a['velocity'], a['position']
                     # put velocity and position labels
-                    cv2.putText(img, f'pos:({pos[0]:.2f}, {pos[1]:.2f})m', \
-                                (int(bbox['left']), int(bbox['top']) - 10), \
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8)
-                    cv2.putText(img, f'v:({vel[0]:.2f}, {vel[1]:.2f})m/s', \
-                                (int(bbox['left']), int(bbox['top']) - 22), \
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8)
+                    cv2.putText(
+                        img, f'pos:({pos[0]:.2f}, {pos[1]:.2f})m', 
+                        (int(bbox['left']), int(bbox['top']) - 10), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
+                    )
+                    cv2.putText(
+                        img, f'v:({vel[0]:.2f}, {vel[1]:.2f})m/s', 
+                        (int(bbox['left']), int(bbox['top']) - 22), 
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
+                    )
 					            
     return img
 
@@ -70,7 +78,7 @@ def read_velocity_image(folder, id, annotation=False):
 
 def crop_cars(folder, id):
     """
-    crop out the cars in the image
+    crop out the cars in the image given annotated bounding boxes
     """
 
     # invalid folder
@@ -109,3 +117,16 @@ def crop_cars(folder, id):
     return res
 
 
+def add_bounding_boxes(img, bboxes):
+    """
+    add bounding boxes to the copy of the image.
+    bboxes: a list of tuples formed as (xTopLeft, yTopLeft, xBottomRight, yBottomRight), normalized to (0, 1)
+    """
+    img_copy = img.copy()
+    for bbox in bboxes:
+        xTopLeft = bbox[0] * img.shape[1]
+        yTopLeft = bbox[1] * img.shape[0]
+        xBottomRight = bbox[2] * img.shape[1]
+        yBottomRight = bbox[3] * img.shape[0]
+        cv2.rectangle(img_copy, (int(xTopLeft), int(yTopLeft)), (int(xBottomRight), int(yBottomRight)), (0, 255, 0), 2)
+    return img_copy
