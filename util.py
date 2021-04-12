@@ -10,21 +10,64 @@ velocity_folder = Path('dataset/velocity')
 lane_folder = Path('dataset/lane')
 
 
-def read_velocity_image(folder, id, annotation=False):
+def draw_annotation(img, annotation):
     """
-    Reads a certain image from the velocity dataset. Adds annotations if needed.
-    If folder is 'test' or 'train', read the last frame of the clip.
+    draw annotation to the copy of the image.
+    img: the original image
+    annotation: the json-formatted annotation
+    """
+    img_copy = img.copy()
+    for item in annotation:
+        ## draw bounding boxes
+        if 'bbox' in item.keys():
+            bbox = item['bbox']
+            cv2.rectangle(
+                img_copy, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), 
+                color=(0, 255, 0), thickness=2
+            )
+
+        ## put position text
+        if 'position' in item.keys():
+            pos = item['position']
+            cv2.putText(
+                img_copy, f'pos:({pos[0]:.2f}, {pos[1]:.2f})m', 
+                (int(bbox['left']), int(bbox['top']) - 10), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
+            )
+
+        ## put velocity text
+        if 'velocity' in item.keys():
+            vel = item['velocity']
+            cv2.putText(
+                img_copy, f'v:({vel[0]:.2f}, {vel[1]:.2f})m/s', 
+                (int(bbox['left']), int(bbox['top']) - 22), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
+            )
+
+    return img_copy
+
+
+def read_velocity_image(folder, id, frame=40, annotation=False):
+    """
+    Reads an image from the velocity dataset. Adds annotations if needed.
+    folder: be one of ['supp', 'test', 'train']
+    id: the id of the image/clip
+    frame: a number between 1 to 40
+    annotation: whether to draw annotation to the image
     """
     
     # invalid folder
     if folder not in ['supp', 'test', 'train']:
         return None
-    
+    # invalid frame
+    if folder != 'supp' and frame < 1 or frame > 40:
+        return  None
+
     if folder == 'supp':
         path_img = project_folder / velocity_folder / f'{folder}/supp_img/{id:04d}.jpg'
         path_annotation = project_folder / velocity_folder / f'{folder}/annotation.json'
     else: # folder is train/test
-        path_img = project_folder / velocity_folder / f'{folder}/clips/{id}/imgs/040.jpg'
+        path_img = project_folder / velocity_folder / f'{folder}/clips/{id}/imgs/{frame:03d}.jpg'
         path_annotation = project_folder / velocity_folder / f'{folder}/clips/{id}/annotation.json'
     
     #print(path_img)
@@ -33,45 +76,28 @@ def read_velocity_image(folder, id, annotation=False):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     
     # add annotation
-    if annotation:
+    if annotation and frame==40:
         # load the annotation file
         with open(path_annotation) as file:
             # parse json file
             annotation = json.load(file)
 
         if folder == 'supp':
-            # extract bboxs
-            bboxs = annotation[id - 1]['bbox']
-            # draw bounding boxes
-            for bbox in bboxs:
-                cv2.rectangle(
-                    img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), 
-                    color=(0, 255, 0), thickness=2
-                )
-        
-        else: # folder is train/test
-            # draw annoatations
-            for a in annotation:
-                bbox = a['bbox']
-                # draw bounding boxes
-                cv2.rectangle(
-                    img, (int(bbox['left']), int(bbox['top'])), (int(bbox['right']), int(bbox['bottom'])), 
-                    color=(0, 255, 0), thickness=2
-                )
-                if folder == 'train':
-                    vel, pos = a['velocity'], a['position']
-                    # put velocity and position labels
-                    cv2.putText(
-                        img, f'pos:({pos[0]:.2f}, {pos[1]:.2f})m', 
-                        (int(bbox['left']), int(bbox['top']) - 10), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
-                    )
-                    cv2.putText(
-                        img, f'v:({vel[0]:.2f}, {vel[1]:.2f})m/s', 
-                        (int(bbox['left']), int(bbox['top']) - 22), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_8
-                    )
-					            
+            # reform the annotation for supp because it is kind of different
+            temp = []
+            for bbox in annotation[id - 1]['bbox']:
+                temp.append({
+                    'bbox': {
+                        'top': bbox['top'],
+                        'right': bbox['right'],
+                        'bottom': bbox['bottom'],
+                        'left': bbox['left']
+                    }
+                })
+            annotation = temp
+
+        img = draw_annotation(img, annotation)
+          
     return img
 
 
@@ -117,16 +143,4 @@ def crop_cars(folder, id):
     return res
 
 
-def add_bounding_boxes(img, bboxes):
-    """
-    add bounding boxes to the copy of the image.
-    bboxes: a list of tuples formed as (xTopLeft, yTopLeft, xBottomRight, yBottomRight), normalized to (0, 1)
-    """
-    img_copy = img.copy()
-    for bbox in bboxes:
-        xTopLeft = bbox[0] * img.shape[1]
-        yTopLeft = bbox[1] * img.shape[0]
-        xBottomRight = bbox[2] * img.shape[1]
-        yBottomRight = bbox[3] * img.shape[0]
-        cv2.rectangle(img_copy, (int(xTopLeft), int(yTopLeft)), (int(xBottomRight), int(yBottomRight)), (0, 255, 0), 2)
-    return img_copy
+
