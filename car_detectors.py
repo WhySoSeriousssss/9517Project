@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
 
-## MobileNet SSD car detector
+
 class MobileNetSSDCarDetector():
+    """
+    Car Detector implemented with pre-trained MobileNet SSD
+    """
     def __init__(self):
         self.inWidth = 600
         self.inHeight = 600
@@ -17,7 +20,7 @@ class MobileNetSSDCarDetector():
         Predicts the cars in the image. Returns a list of bounding boxes.
         Each bounding box is a tuple formed as (xTopLeft, yTopLeft, xBottomRight, yBottomRight), normalized to (0, 1)
         """
-        bboxes = []
+        res = []
         blob = cv2.dnn.blobFromImage(cv2.resize(img, (600, 600)), self.inScaleFactor, (self.inWidth, self.inHeight))
         self.net.setInput(blob, "data")
         detection = self.net.forward("detection_out")
@@ -27,5 +30,12 @@ class MobileNetSSDCarDetector():
             if detectionMat[i,1] == 7 or detectionMat[i, 1] == 6:
                 confidence = detectionMat[i, 2]
                 if confidence >= self.confidenceThreshold:
-                    bboxes.append(tuple(detectionMat[i, 3:7]))
-        return bboxes
+                    res.append({
+                        'bbox': {
+                            'top': detectionMat[i, 4] * img.shape[0],
+                            'right': detectionMat[i, 5] * img.shape[1],
+                            'bottom': detectionMat[i, 6] * img.shape[0],
+                            'left': detectionMat[i, 3] * img.shape[1]
+                        }
+                    })
+        return res
