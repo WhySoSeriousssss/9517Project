@@ -7,7 +7,7 @@ class YOLOv3CarDetector():
     Car Detector implemented with pre-trained YOLOv3 on COCO dataset
     """
     def __init__(self):
-        self.net = cv2.dnn.readNet("car detector/YOLOv3/yolov3.weights", "car detector/YOLOv3/yolov3.cfg")
+        self.net = cv2.dnn.readNet("ObjectDetectionModels/YOLOv3/yolov3.weights", "ObjectDetectionModels/YOLOv3/yolov3.cfg")
         layer_names = self.net.getLayerNames()
         self.output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
         
@@ -78,7 +78,7 @@ class MobileNetSSDCarDetector():
         self.inWidth = 600
         self.inHeight = 600
         self.inScaleFactor = 0.007843
-        self.net = cv2.dnn.readNetFromCaffe("car detector/MobileNetSSD_deploy.prototxt", "car detector/MobileNetSSD_deploy.caffemodel")
+        self.net = cv2.dnn.readNetFromCaffe("ObjectDetectionModels/MobileNetSSD_deploy.prototxt", "ObjectDetectionModels/MobileNetSSD_deploy.caffemodel")
         self.confidenceThreshold = 0.15
 
     def predict(self, img):
