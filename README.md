@@ -21,3 +21,8 @@ Start Terminal.app again, to read in the new settings, and type this: `echo $PYT
 
 It should show something like /Users/my_user/myproject.
 
+## Download the YOLOv3 weight file ##
+Download from here:
+https://drive.google.com/file/d/1vp2kHja1IonsLrjjg_a77LV1kXMjoIzg/view?usp=sharing
+
+put it in the folder: ObjectDetectionModels/YOLOv3
