@@ -1,15 +1,12 @@
-from car_detectors import MobileNetSSDCarDetector
-from position_predictor import PositionPredictor
-from velocity_predictor import VelocityPredictor
 import util
 import numpy as np
 
 
 class VelocityPipeline():
-    def __init__(self):
-        self.car_detector = MobileNetSSDCarDetector()
-        self.position_predictor = PositionPredictor()
-        self.velocity_predictor = VelocityPredictor()
+    def __init__(self, car_detector, position_predictor, velocity_predictor):
+        self.car_detector = car_detector
+        self.position_predictor = position_predictor
+        self.velocity_predictor = velocity_predictor
 
     def run(self, folder, img_id, compare=False):
         """

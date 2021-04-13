@@ -2,6 +2,74 @@ import cv2
 import numpy as np
 
 
+class YOLOv3CarDetector():
+    """
+    Car Detector implemented with pre-trained YOLOv3 on COCO dataset
+    """
+    def __init__(self):
+        self.net = cv2.dnn.readNet("car detector/YOLOv3/yolov3.weights", "car detector/YOLOv3/yolov3.cfg")
+        layer_names = self.net.getLayerNames()
+        self.output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+        
+        self.confidenceThreshold = 0.5
+        self.inScaleFactor = 0.00392
+        
+        with open("car detector/YOLOv3/coco.names", "r") as f:
+            self.classes = [line.strip() for line in f.readlines()]
+    
+    def predict(self, img):
+        """
+        Predicts the cars in the image.
+        """
+        height, width = img.shape[0], img.shape[1]
+        
+        blob = cv2.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+        # forward pass
+        self.net.setInput(blob)
+        outs = self.net.forward(self.output_layers)
+        
+        class_ids = []
+        confidences = []
+        boxes = []
+        for out in outs:
+            for detection in out:
+                scores = detection[5:]
+                class_id = np.argmax(scores)
+                confidence = scores[class_id]
+                if class_id in [2, 5, 7] and confidence > 0.5: # class id 2, 5, 7 stands for car, bus, and truck
+                    # Object detected
+                    center_x = int(detection[0] * width)
+                    center_y = int(detection[1] * height)
+                    w = int(detection[2] * width)
+                    h = int(detection[3] * height)
+        
+                    # Rectangle coordinates
+                    x = int(center_x - w / 2)
+                    y = int(center_y - h / 2)
+        
+                    boxes.append([x, y, w, h])
+                    confidences.append(float(confidence))
+                    class_ids.append(class_id)
+        
+        # non-max suppression
+        res = []
+        indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+        for i in range(len(boxes)):
+            if i in indexes:
+                x, y, w, h = boxes[i]
+                cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 1)
+                res.append({
+                    'bbox': {
+                        'top': y,
+                        'right': x + w,
+                        'bottom': y + h,
+                        'left': x
+                    }
+                })
+        return res
+                
+        
+        
 class MobileNetSSDCarDetector():
     """
     Car Detector implemented with pre-trained MobileNet SSD
@@ -9,16 +77,13 @@ class MobileNetSSDCarDetector():
     def __init__(self):
         self.inWidth = 600
         self.inHeight = 600
-        self.whRatio = 1
         self.inScaleFactor = 0.007843
         self.net = cv2.dnn.readNetFromCaffe("car detector/MobileNetSSD_deploy.prototxt", "car detector/MobileNetSSD_deploy.caffemodel")
-        # set threshold
         self.confidenceThreshold = 0.15
 
     def predict(self, img):
         """
-        Predicts the cars in the image. Returns a list of bounding boxes.
-        Each bounding box is a tuple formed as (xTopLeft, yTopLeft, xBottomRight, yBottomRight), normalized to (0, 1)
+        Predicts the cars in the image.
         """
         res = []
         blob = cv2.dnn.blobFromImage(cv2.resize(img, (600, 600)), self.inScaleFactor, (self.inWidth, self.inHeight))
