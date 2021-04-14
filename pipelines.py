@@ -15,7 +15,7 @@ class VelocityPipeline():
         Returns the predicted annotation, along with the result image
         """
         annotations = []
-        n_frames = 2
+        n_frames = 10
         for i in range(n_frames):
             img = util.read_velocity_image(folder, img_id, frame=i+41-n_frames, annotation=False)
 
@@ -28,7 +28,8 @@ class VelocityPipeline():
             annotations.append(annotation)
 
         # predict velocity
-        out_annotation = self.velocity_predictor.predict(annotations)
+        out_annotation = self.velocity_predictor.predict2(annotations)
+
 
         # draw annotation
         out_img = util.read_velocity_image(folder, img_id, frame=40, annotation=False)

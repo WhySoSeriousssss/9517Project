@@ -144,3 +144,20 @@ def crop_cars(folder, id):
 
 
 
+def IoU(bbox1, bbox2):
+    """
+    calculate the intersection over union of 2 bboxes
+    """
+    x1, y1 = max(bbox1[0], bbox2[0]), max(bbox1[1], bbox2[1])
+    x2, y2 = min(bbox1[2], bbox2[2]), min(bbox1[3], bbox2[3])
+    
+    # area of intersection
+    area_intersect = max(0, x2 - x1) * max(0, y2 - y1)
+
+    # areas of 2 bounding boxes
+    area1 = (bbox1[2] - bbox1[0]) * (bbox1[3] - bbox1[1])
+    area2 = (bbox2[2] - bbox2[0]) * (bbox2[3] - bbox2[1])
+
+    iou = float(area_intersect) / float(area1 + area2 - area_intersect)
+
+    return iou

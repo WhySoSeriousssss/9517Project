@@ -7,6 +7,9 @@ class YOLOv3CarDetector():
     Car Detector implemented with pre-trained YOLOv3 on COCO dataset
     """
     def __init__(self):
+        self.minBBoxSize = 320
+        self.maxBBoxSize = float('inf')
+
         self.net = cv2.dnn.readNet("ObjectDetectionModels/YOLOv3/yolov3.weights", "ObjectDetectionModels/YOLOv3/yolov3.cfg")
         layer_names = self.net.getLayerNames()
         self.output_layers = [layer_names[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
@@ -14,7 +17,7 @@ class YOLOv3CarDetector():
         self.confidenceThreshold = 0.5
         self.inScaleFactor = 0.00392
         
-        with open("car detector/YOLOv3/coco.names", "r") as f:
+        with open("ObjectDetectionModels/YOLOv3/coco.names", "r") as f:
             self.classes = [line.strip() for line in f.readlines()]
     
     def predict(self, img):
@@ -57,15 +60,16 @@ class YOLOv3CarDetector():
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
-                cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 1)
-                res.append({
-                    'bbox': {
-                        'top': y,
-                        'right': x + w,
-                        'bottom': y + h,
-                        'left': x
-                    }
-                })
+                if self.minBBoxSize < w * h < self.maxBBoxSize:
+                    cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 1)
+                    res.append({
+                        'bbox': {
+                            'top': y,
+                            'right': x + w,
+                            'bottom': y + h,
+                            'left': x
+                        }
+                    })
         return res
                 
         
