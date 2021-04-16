@@ -7,7 +7,7 @@ class YOLOv3CarDetector():
     Car Detector implemented with pre-trained YOLOv3 on COCO dataset
     """
     def __init__(self):
-        self.minBBoxSize = 320
+        self.minBBoxSize = 310
         self.maxBBoxSize = float('inf')
 
         self.net = cv2.dnn.readNet("ObjectDetectionModels/YOLOv3/yolov3.weights", "ObjectDetectionModels/YOLOv3/yolov3.cfg")
