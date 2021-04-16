@@ -56,19 +56,20 @@ class YOLOv3CarDetector():
         
         # non-max suppression
         res = []
+        class_map = {2:'car', 5:'bus', 7:'truck'}
         indexes = cv2.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
         for i in range(len(boxes)):
             if i in indexes:
                 x, y, w, h = boxes[i]
                 if self.minBBoxSize < w * h < self.maxBBoxSize:
-                    cv2.rectangle(img, (x, y), (x + w, y + h), (0,255,0), 1)
                     res.append({
                         'bbox': {
                             'top': y,
                             'right': x + w,
                             'bottom': y + h,
                             'left': x
-                        }
+                        },
+                        'class':class_map[class_ids[i]]
                     })
         return res
                 
