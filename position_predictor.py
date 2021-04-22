@@ -9,6 +9,7 @@ class PositionPredictor():
         self.fy = 710.3725
         self.cx = 713.85
         self.cy = 327.0
+        self.f = (self.fx + self.fy)/2
         self.cameraHeight = 1.8
 
         # average car width
@@ -24,7 +25,7 @@ class PositionPredictor():
             bbox = annotation[i]['bbox']
             
             width = bbox['right'] - bbox['left']
-            x = self.carWidth * self.fy / width
+            x = self.carWidth * self.f / width
             
             if abs(bbox['left'] - self.cx) < abs(bbox['right'] - self.cx):
                 h = bbox['left'] - self.cx
